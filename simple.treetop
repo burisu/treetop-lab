@@ -1,0 +1,71 @@
+grammar Simple
+
+  rule expression
+    multitive / divisive / additive / primary
+  end
+
+  rule multitive
+    head:primary (space? '*' space? primary)+
+  end
+
+  rule divisive
+    head:primary space? '/' space? operand:primary
+  end
+
+  rule additive
+    head:primary space? (additive_operator space? operand:primary)+
+  end
+
+  rule primary
+    value / number / reading / '(' expression ')'
+  end
+
+  rule space
+    ' '*
+  end
+
+  rule additive_operator
+    '+' / '-'
+  end 
+
+  rule reading
+    individual_reading / whole_reading
+  end
+
+  rule individual_reading
+    actor '::' indicator
+  end
+
+  rule whole_reading
+    actor '.' indicator
+  end
+
+  rule actor
+    self / word
+  end
+
+  rule indicator
+    word
+  end
+
+  rule word
+    [a-z] [a-z0-9]* ('_' [a-z0-9]+)*
+  end
+
+  rule number
+    ('.' [0-9]+ / (([1-9] [0-9]* / '0') ('.' [0-9]+)?)) {
+      def eval(env={})
+        text_value.to_d
+      end
+    }
+  end
+
+  rule self
+    'self'
+  end 
+
+  rule value
+    'value'
+  end
+
+end
