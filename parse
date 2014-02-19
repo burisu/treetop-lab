@@ -1,8 +1,58 @@
 #!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
 require 'rubygems'
 require 'polyglot'
 require 'treetop'
 require 'colored'
+
+module Simple
+
+  class Base < Treetop::Runtime::SyntaxNode
+  end
+
+  class Expression < Base
+  end
+
+  class Multiplication < Base
+  end
+
+  class Division < Base
+  end
+
+  class Addition < Base
+  end
+
+  class Substraction < Base
+  end
+
+  class IndividualReading < Base
+  end
+
+  class WholeReading < Base
+  end
+
+  class Variable < Base
+  end
+
+  class Indicator < Base
+  end
+
+  class Self < Base
+  end
+
+  class Number < Base
+  end
+
+  class Value < Base
+  end
+
+  class Add < Base
+  end
+
+  class Substract < Base
+  end
+
+end
 
 Treetop.load "simple"
 
@@ -19,11 +69,11 @@ exprs = {
   "value / value" => true,
   "(value / value)" => true,
   "value/value" => true,
-  "value / value / value" => false,
-  "value/value/ value" => false,
-  "value/value * value" => false,
+  "value / value / value" => true,
+  "value/value/ value" => true,
+  "value/value * value" => true,
   "(value/value) * value" => true,
-  "(value/value/value) * value" => false,
+  "(value/value/value) * value" => true,
   "value/(value * value)" => true,
   "value + value" => true,
   "1" => true,
@@ -34,7 +84,7 @@ exprs = {
   "0.456" => true,
   "12.5" => true,
   "12.5 * 852 * value" => true,
-  "12.5 / 852 * value" => false,
+  "12.5 / 852 * value" => true,
   "self.a" => true,
   "self.ab" => true,
   "self.abc" => true,
@@ -45,28 +95,37 @@ exprs = {
   "self:temperature" => false,
   "self::temperature" => true,
   "value * self.temperature" => true,
-  "value * self.temperature / 1000" => false,
-  "value / self.temperature * 1000" => false,
+  "value * self.temperature / 1000" => true,
+  "value / self.temperature * 1000" => true,
   "value / (self.temperature * 1000)" => true,
-  "value / self.temperature / 1000" => false,
-  "value / self::net_mass / 1000" => false,
-  "(value + self::net_mass) / 1000 + 852" => false,
-  "(value + self::net_mass) / 1000 + (852)" => false,
+  "value / self.temperature / 1000" => true,
+  "value / self::net_mass / 1000" => true,
+  "(value + self::net_mass) / 1000 + 852" => true,
+  "(value + self::net_mass) / 1000 + (852)" => true,
   "((value + self::net_mass) / 1000) + 852" => true,
   "(0.0001 * (value + self::net_mass) * 2) + 852" => true,
   "(0.0001 * (value + self::net_mass) * 2) + 852" => true,
   "(((value * self.thousand_grains_mass) / 1000) * cultivation.net_surface_area) / self::net_mass" => true,
 }
 
+def self.clean_tree(root)
+  return if root.elements.nil?
+  root.elements.delete_if{ |node| node.class.name == "Treetop::Runtime::SyntaxNode" }
+  root.elements.each{ |node| clean_tree(node) }
+end
+
 for expr, success in exprs
   print ((success ? expr.yellow : expr.magenta) + ":").ljust(exprs.keys.map(&:size).max + 11)
-  result = parser.parse(expr)
+  if result = parser.parse(expr)
+    clean_tree(result)
+    # result.clean
+  end
   message = result.inspect.gsub(/^/, '  ')
   if !result.nil? == success
-    puts "[" + " OK ".green + "]"
-    # puts message.green unless result.nil?
+    puts "[" + " OK ".bold.green + "]"
   else
-    puts "[" + "FAIL".red + "]"
+    puts "[" + "FAIL".bold.red + "]"
     # puts message.red
   end
+  # puts message unless result.nil?
 end

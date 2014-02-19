@@ -1,71 +1,63 @@
 grammar Simple
 
   rule expression
-    multitive / divisive / additive / primary
+    additive / primary 
   end
 
   rule multitive
-    head:primary (space? '*' space? primary)+
-  end
-
-  rule divisive
-    head:primary space? '/' space? operand:primary
+      head:primary space? "*" space? operand:multitive <Multiplication> 
+    / head:primary space? "/" space? operand:multitive <Division> 
+    / primary
   end
 
   rule additive
-    head:primary space? (additive_operator space? operand:primary)+
+      head:multitive space? "+" space? operand:additive <Addition> 
+    / head:multitive space? "-" space? operand:additive <Substraction> 
+    / multitive
   end
 
   rule primary
-    value / number / reading / '(' expression ')'
+    value / number / reading / "(" space? expression space? ")" <Expression>
   end
 
   rule space
-    ' '*
+    " "*
   end
-
-  rule additive_operator
-    '+' / '-'
-  end 
 
   rule reading
     individual_reading / whole_reading
   end
 
   rule individual_reading
-    actor '::' indicator
+    actor '::' indicator <IndividualReading>
   end
 
   rule whole_reading
-    actor '.' indicator
+    actor '.' indicator <WholeReading>
   end
 
   rule actor
-    self / word
+    self / variable
   end
+
+  rule variable
+    [a-z] [a-z0-9]* ('_' [a-z0-9]+)* <Variable>
+  end 
 
   rule indicator
-    word
-  end
-
-  rule word
-    [a-z] [a-z0-9]* ('_' [a-z0-9]+)*
+    [a-z] [a-z0-9]* ('_' [a-z0-9]+)* <Indicator>
   end
 
   rule number
-    ('.' [0-9]+ / (([1-9] [0-9]* / '0') ('.' [0-9]+)?)) {
-      def eval(env={})
-        text_value.to_d
-      end
-    }
+    ('.' [0-9]+) <Number> / ([1-9] [0-9]* / '0') ('.' [0-9]+)? <Number>
   end
 
   rule self
-    'self'
+    "self" <Self> 
   end 
 
   rule value
-    'value'
+    "value" <Value>
   end
 
 end
